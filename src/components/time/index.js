@@ -2,31 +2,35 @@ import React, {useState} from 'react';
 import './style.css'
 import { DateTime } from "luxon"
 
-function DateTimePretty({children}) {
-    const now = DateTime.now()
-    const dateArr = children.props.date.split(' ')
-    const baseTime = DateTime.fromISO(dateArr[0] + 'T' + dateArr[1])
-    const diff = now.diff(baseTime, ['hours'])
-    console.log(diff.values.hours)
-    let prettyTime = 'x дней назад'
-    if(diff.values.hours < 1){
-        prettyTime = '12 минут назад'
-    }else if(diff.values.hours > 1 && diff.values.hours < 24) {
-        prettyTime = '5 часов назад'
+function DateTimeHoc(component) {
+    return function(props, ...args){
+        const now = DateTime.now()
+        const dateArr = props.date.split(' ')
+        const baseTime = DateTime.fromISO(dateArr[0] + 'T' + dateArr[1])
+        const diff = now.diff(baseTime, ['hours'])
+        console.log(diff.values.hours)
+        let prettyTime = 'x дней назад'
+        if(diff.values.hours < 1){
+            prettyTime = '12 минут назад'
+        }else if(diff.values.hours > 1 && diff.values.hours < 24) {
+            prettyTime = '5 часов назад'
+        }
+        return component.apply(this,[{...props,date:prettyTime},...args])
     }
-    return React.cloneElement(children, {date:prettyTime} )
+    
 }
 function DateTimes(props) {
     return (
         <p className="date">{props.date}</p>
     )
 }
+const DateTimePretty = DateTimeHoc(DateTimes)
 
 function Video(props) {
     return (
         <div className="video">
             <iframe src={props.url} frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-            <DateTimePretty><DateTimes date={props.date} /></DateTimePretty>
+            <DateTimePretty date={props.date}/>
         </div>
     )
 }
@@ -39,7 +43,7 @@ export default function Time() {
     const [list, setList] = useState([
         {
             url: 'https://www.youtube.com/embed/rN6nlNC9WQA?rel=0&amp;controls=0&amp;showinfo=0',
-            date: '2022-06-24 14:24:00'
+            date: '2022-06-27 13:24:00'
         },
         {
             url: 'https://www.youtube.com/embed/dVkK36KOcqs?rel=0&amp;controls=0&amp;showinfo=0',
